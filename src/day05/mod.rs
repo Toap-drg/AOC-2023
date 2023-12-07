@@ -1,5 +1,6 @@
 #![cfg(test)]
-use std::fs;
+
+use crate::open_first;
 
 #[derive(Debug)]
 struct Range {
@@ -158,9 +159,8 @@ struct Almanac {
 }
 
 impl Almanac {
-    fn parse(path: &str) -> Self {
-        let content = fs::read_to_string(path).unwrap();
-        let mut iter = content.lines();
+    fn parse(data: &str) -> Self {
+        let mut iter = data.lines();
         let seeds = iter
             .next()
             .expect("Missing entry line")
@@ -205,9 +205,13 @@ impl Almanac {
 
 #[test]
 fn task1() {
-    // let path = "src/day05/sample.txt";
-    let path = "src/day05/input.txt";
-    let data = Almanac::parse(path);
+    let data = open_first(&[
+        "src/day05/input.txt",
+        "src/day05/sample.txt",
+        //
+    ])
+    .unwrap();
+    let data = Almanac::parse(&data);
     // println!("Data: {data:#?}");
 
     let mut curr = EntryType::Seed;
@@ -229,9 +233,13 @@ fn task1() {
 
 #[test]
 fn task2() {
-    // let path = "src/day05/sample.txt";
-    let path = "src/day05/input.txt";
-    let data = Almanac::parse(path);
+    let data = open_first(&[
+        "src/day05/input.txt",
+        "src/day05/sample.txt",
+        //
+    ])
+    .unwrap();
+    let data = Almanac::parse(&data);
     // println!("Data: {data:#?}");
 
     let mut curr = EntryType::Seed;
