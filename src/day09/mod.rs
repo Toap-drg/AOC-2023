@@ -14,9 +14,9 @@ impl Extrapolate {
         seq.windows(2).map(|s| s[1] - s[0]).collect()
     }
 
-    fn extend(set: &mut Vec<Vec<Number>>) -> Number {
+    fn forward(set: &mut Vec<Vec<Number>>) -> Number {
         set.iter_mut().rfold(0, |diff, seq| -> Number {
-            let next = diff + seq.last().expect("missing last element");
+            let next = seq.last().expect("missing last element") + diff;
             seq.push(next);
             return next;
         })
@@ -24,7 +24,7 @@ impl Extrapolate {
 
     fn reverse(set: &mut Vec<Vec<Number>>) -> Number {
         set.iter_mut().rfold(0, |diff, seq| -> Number {
-            let prev = seq.first().expect("missing last element") - diff;
+            let prev = seq.first().expect("missing first element") - diff;
             seq.insert(0, prev);
             return prev;
         })
@@ -52,7 +52,7 @@ fn task1() {
                 sequences.push(Extrapolate::next(sequences.last().unwrap()));
             }
 
-            let result = Extrapolate::extend(&mut sequences);
+            let result = Extrapolate::forward(&mut sequences);
             // println!("{:?} -> {}", sequences, result);
 
             result
