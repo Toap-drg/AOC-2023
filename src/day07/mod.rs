@@ -17,7 +17,6 @@ enum CardTypeStandard {
     _4,
     _3,
     _2,
-    //_J,
 }
 
 #[derive(Debug, PartialEq, Eq, PartialOrd, Ord, Clone, Copy)]
