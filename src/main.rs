@@ -8,6 +8,7 @@ mod day06;
 mod day07;
 mod day08;
 mod day09;
+mod day10;
 
 #[allow(unused)]
 pub(crate) fn open_first(paths: &[&str]) -> std::io::Result<String> {
