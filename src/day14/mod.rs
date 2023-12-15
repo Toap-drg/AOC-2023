@@ -2,129 +2,86 @@
 
 use crate::open_first;
 
-fn order(a: usize, b: usize) -> (usize, usize) {
-    if a < b {
-        (a, b)
-    } else {
-        (b, a)
+#[derive(Clone, Copy)]
+enum Rock {
+    Ball,
+    Square,
+    Empty,
+}
+
+impl Rock {
+    fn parse(c: char) -> Option<Self> {
+        match c {
+            'O' => Some(Rock::Ball),
+            '#' => Some(Rock::Square),
+            '.' => Some(Rock::Empty),
+            _ => None,
+        }
     }
+
+    fn symbol(&self) -> &str {
+        match self {
+            Rock::Ball => "O ",
+            Rock::Square => "# ",
+            Rock::Empty => ". ",
+        }
+    }
+}
+
+fn transpose(grid: &[Rock], cols: usize) -> Vec<Rock> {
+    let mut out = Vec::with_capacity(grid.len());
+    for col in 0..cols {
+        for row in grid.chunks_exact(cols) {
+            out.push(row[col])
+        }
+    }
+    return out;
 }
 
 #[test]
 fn task1() {
     let text = open_first(&[
-        "src/day11/input.txt",  //
-        "src/day11/sample.txt", //
+        "src/day14/input.txt",  //
+        "src/day14/sample.txt", //
     ])
     .unwrap();
 
     // println!("{}", text);
 
-    let stars = text
+    let rocks = text
         .lines()
-        .enumerate()
-        .flat_map(|(row, line)| {
-            line.chars()
-                .enumerate()
-                .filter_map(move |(col, char)| (char == '#').then(|| (row, col)))
-        })
+        .flat_map(|line| line.chars().map(|c| Rock::parse(c).expect("not a rock")))
         .collect::<Vec<_>>();
 
-    // println!("{:?}", stars);
+    let rows = text.lines().count();
+    let cols = rocks.len() / rows;
+    assert_eq!(rows * cols, rocks.len());
 
-    let rows = stars.iter().map(|(row, _)| *row).max().unwrap() + 1;
-    let cols = stars.iter().map(|(_, col)| *col).max().unwrap() + 1;
-
-    let mut rows = vec![true; rows];
-    let mut cols = vec![true; cols];
-
-    for (row, col) in &stars {
-        rows[*row] = false;
-        cols[*col] = false;
+    println!("rocks:");
+    for row in rocks.chunks_exact(cols) {
+        let line = row.iter().map(|r| r.symbol()).collect::<String>();
+        println!("{}", line);
     }
 
-    // println!("rows: {:?}", rows);
-    // println!("cols: {:?}", cols);
+    let rocks = transpose(&rocks, cols);
+    let cols = rows;
 
-    let result: usize = (1..stars.len())
-        .map(|idx| -> usize {
-            let (a_row, a_col) = stars[idx - 1];
-            stars[idx..]
-                .iter()
-                .map(|&(b_row, b_col)| {
-                    let (l_row, h_row) = order(a_row, b_row);
-                    let rows = rows[l_row..h_row].iter().filter(|&empty| *empty).count();
-                    let rows = rows + h_row - l_row;
-
-                    let (l_col, h_col) = order(a_col, b_col);
-                    let cols = cols[l_col..h_col].iter().filter(|&empty| *empty).count();
-                    let cols = cols + h_col - l_col;
-
-                    return rows + cols;
-                })
-                .sum()
-        })
-        .sum();
-
-    println!("Result: {}", result);
-}
-
-#[test]
-fn task2() {
-    let text = open_first(&[
-        "src/day11/input.txt",  //
-        "src/day11/sample.txt", //
-    ])
-    .unwrap();
-
-    const UNIVERSE_AGE: usize = 1_000_000;
-    const AGE_TERM: usize = UNIVERSE_AGE - 1;
-
-    // println!("{}", text);
-
-    let stars = text
-        .lines()
-        .enumerate()
-        .flat_map(|(row, line)| {
-            line.chars()
-                .enumerate()
-                .filter_map(move |(col, char)| (char == '#').then(|| (row, col)))
-        })
-        .collect::<Vec<_>>();
-
-    // println!("{:?}", stars);
-
-    let rows = stars.iter().map(|(row, _)| *row).max().unwrap() + 1;
-    let cols = stars.iter().map(|(_, col)| *col).max().unwrap() + 1;
-
-    let mut rows = vec![true; rows];
-    let mut cols = vec![true; cols];
-
-    for (row, col) in &stars {
-        rows[*row] = false;
-        cols[*col] = false;
-    }
-
-    // println!("rows: {:?}", rows);
-    // println!("cols: {:?}", cols);
-
-    let result: usize = (1..stars.len())
-        .map(|idx| -> usize {
-            let (a_row, a_col) = stars[idx - 1];
-            stars[idx..]
-                .iter()
-                .map(|&(b_row, b_col)| {
-                    let (l_row, h_row) = order(a_row, b_row);
-                    let rows = rows[l_row..h_row].iter().filter(|&empty| *empty).count();
-                    let rows = rows * AGE_TERM + h_row - l_row;
-
-                    let (l_col, h_col) = order(a_col, b_col);
-                    let cols = cols[l_col..h_col].iter().filter(|&empty| *empty).count();
-                    let cols = cols * AGE_TERM + h_col - l_col;
-
-                    return rows + cols;
-                })
-                .sum()
+    let result: usize = rocks
+        .chunks_exact(cols)
+        .map(|row| {
+            let mut next = row.len();
+            let mut sum = 0;
+            for (index, rock) in row.iter().enumerate() {
+                match rock {
+                    Rock::Ball => {
+                        sum += next;
+                        next -= 1;
+                    }
+                    Rock::Square => next = row.len() - index - 1,
+                    Rock::Empty => (),
+                }
+            }
+            return sum;
         })
         .sum();
 
